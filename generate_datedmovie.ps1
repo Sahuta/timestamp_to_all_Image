@@ -17,11 +17,7 @@ $timestamps = $timestamps | ForEach-Object {
 }
 
 
-Write-Host "画像の数: $numOfIm"
-Write-Host $timestamps[0]
-Write-Host $timestamps[1]
-
-#一時フォルダのパスを指定
+#一時フォルダtmpを作成、すでにある場合は削除してから作成
 $tempFolderPath = "$PWD/tmp"
 
 Remove-Item -Path $tempFolderPath -Recurse -Force
@@ -61,4 +57,5 @@ for ($i = 0; $i -lt $numOfIm; $i++) {
     $image.Dispose()
 }
 
+# 画像を動画に変換
 ffmpeg -i $PWD/tmp/%d.jpg -c:v libx264 -pix_fmt yuv420p -r 60 $args/datedmovie.mp4
