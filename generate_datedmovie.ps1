@@ -1,36 +1,41 @@
 # パスを入力
 $dir = "$args/img"
 
-# 空の配列を宣言
-$timestamps = @()
-$names = $(Get-ChildItem -Path $dir -Filter *.jpg | Select-Object -ExpandProperty FullName)
-$length = $names.Count
-$status = "画像の撮影日時を取得中..."
+$names = @()
 
-# 撮影時刻を取得して配列に追加
-for ($i = 0; $i -lt $names.Count; $i++) {
-    $prog = ($i/$length)*100
-    Write-Progress -Activity $status -PercentComplete $prog
-    $timestamp = exiftool -DateTimeOriginal $names[$i] -s -s -s -stay_open 1
-    $timestamps += $timestamp
+$names += $(Get-ChildItem -Path $dir -Filter *.jpg | Select-Object -ExpandProperty FullName)
+$numOfIm = $names.Count
+
+$timestamps = $(exiftool -DateTimeOriginal -ext jpg  -s -s -s $dir  | Where-Object {$_ -notmatch "^[\d\s]+image files read$"} | ForEach-Object { ($_ -split '========')[0]})
+# 改行でデータを分割し、空行を除去
+$timestamps = $timestamps -split "`n" | Where-Object { $_ -ne '' }
+
+# リストに変換
+$timestamps = $timestamps | ForEach-Object {
+    # 各行を追加
+    $_
 }
-# 一時フォルダのパスを指定
+
+
+Write-Host "画像の数: $numOfIm"
+Write-Host $timestamps[0]
+Write-Host $timestamps[1]
+
+#一時フォルダのパスを指定
 $tempFolderPath = "$PWD/tmp"
 
-# 一時フォルダが存在しない場合は作成する
-if (-not (Test-Path $tempFolderPath)) {
-    New-Item -Path $tempFolderPath -ItemType Directory
-}
+Remove-Item -Path $tempFolderPath -Recurse -Force
+New-Item -Path $tempFolderPath -ItemType Directory
 
 # 連番画像に対して撮影時刻をオーバーレイ
 $status = " 画像に撮影日時を書き込んでいます..."
-for ($i = 0; $i -lt $names.Count; $i++) {
-    $prog = ($i/$length)*100
+for ($i = 0; $i -lt $numOfIm; $i++) {
+    $prog = ($i/$numOfIm)*100
     Write-Progress -Activity $status -PercentComplete $prog
 
-    $timestamp = $timestamps[$i - 1]
-    $imagepath = $names[$i - 1]
-    $outputpath = "$PWD/tmp/$i.jpg"
+    $timestamp = $timestamps[$i]
+    $imagepath = $names[$i]
+    $outputpath = "$tempFolderPath/$i.jpg"
     
     # 画像を読み込む
     $image = [System.Drawing.Image]::FromFile($imagePath)
@@ -57,4 +62,3 @@ for ($i = 0; $i -lt $names.Count; $i++) {
 }
 
 ffmpeg -i $PWD/tmp/%d.jpg -c:v libx264 -pix_fmt yuv420p -r 60 $args/datedmovie.mp4
-Remove-Item -Path $PWD/tmp -Recurse -Force
