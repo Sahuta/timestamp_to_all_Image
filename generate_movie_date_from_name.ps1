@@ -42,12 +42,19 @@ for ($i = 0; $i -lt $numOfIm; $i++) {
     
     # テキストを描画
     # 画像の高さに応じてフォントサイズを設定
-    $fontHeight = $image.Height / 20
+    $fontHeight = 64
     $font = New-Object System.Drawing.Font("Arial", $fontHeight)
     $brush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::White)
 
-    $fileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($imagepath) -replace "_", ":"
+    $fileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($imagepath) -replace "-", "/" -replace "_", ":"
 
+    # 3つ目の "/" を " " に置き換える
+    $splitFileName = $fileNameWithoutExtension -split "/"
+    if ($splitFileName.Length -ge 4) {
+        $date = $splitFileName[0..2] -join "/" # yyyy mm dd
+        $fileNameWithoutExtension = ($date, $splitFileName[3]) -join " "
+    }
+    #Write-Host $fileNameWithoutExtension
 
     $point = New-Object System.Drawing.PointF(10, 10)  # PointF を使用して Point を作成
     $graphics.DrawString($fileNameWithoutExtension, $font, $brush, $point)

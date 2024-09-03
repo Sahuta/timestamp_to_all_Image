@@ -1,9 +1,9 @@
 # パスを入力
-$dir = "$args/img"
+$dir = "$args" + "/img"
 
 $names = @()
 
-$names += $(Get-ChildItem -Path $dir -Filter *.jpg | Select-Object -ExpandProperty FullName)
+$names += $(Get-ChildItem -Path $dir -Filter *.JPG | Select-Object -ExpandProperty FullName)
 $numOfIm = $names.Count
 
 $timestamps = $(exiftool -DateTimeOriginal -ext jpg  -s -s -s $dir  | Where-Object {$_ -notmatch "^[\d\s]+image files read$"} | ForEach-Object { ($_ -split '========')[0]})
@@ -31,7 +31,8 @@ for ($i = 0; $i -lt $numOfIm; $i++) {
 
     $timestamp = $timestamps[$i]
     $imagepath = $names[$i]
-    $outputpath = "$tempFolderPath/$i.jpg"
+    $num = "{0:D4}" -f $i
+    $outputpath = "$tempFolderPath/$num.jpg"
     
     # 画像を読み込む
     $image = [System.Drawing.Image]::FromFile($imagePath)
@@ -41,7 +42,7 @@ for ($i = 0; $i -lt $numOfIm; $i++) {
     
     # テキストを描画
     # 画像の高さに応じてフォントサイズを設定
-    $fontHeight = $image.Height / 20
+    $fontHeight = $image.Height / 40
     $font = New-Object System.Drawing.Font("Arial", $fontHeight)
     $brush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::White)
     $point = New-Object System.Drawing.PointF(10, 10)  # PointF を使用して Point を作成
@@ -58,4 +59,7 @@ for ($i = 0; $i -lt $numOfIm; $i++) {
 }
 
 # 画像を動画に変換
-ffmpeg -i $PWD/tmp/%d.jpg -c:v libx264 -pix_fmt yuv420p -r 60 $args/datedmovie.mp4
+ffmpeg -i $PWD/tmp/%04d.jpg -c:v libx264 -pix_fmt yuv420p -r 60 $args/datedmovie.mp4
+
+# プレゼン用圧縮verも作成
+ffmpeg -i $args/datedmovie.mp4 -crf 37 $args/compressed.mp4
