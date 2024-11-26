@@ -60,7 +60,7 @@ for ($i = 0; $i -lt $numOfIm; $i++) {
         $date = $splitFileName[0..2] -join "/" # yyyy mm dd
         $fileNameWithoutExtension = ($date, $splitFileName[3]) -join " "
     }
-    Write-Host $fileNameWithoutExtension
+    #Write-Host $fileNameWithoutExtension
 
     $point = New-Object System.Drawing.PointF(10, 10)  # PointF を使用して Point を作成
     $graphics.DrawString($fileNameWithoutExtension, $font, $brush, $point)

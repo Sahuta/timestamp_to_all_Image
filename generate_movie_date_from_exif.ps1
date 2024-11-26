@@ -29,7 +29,7 @@ for ($i = 0; $i -lt $numOfIm; $i++) {
     $prog = ($i/$numOfIm)*100
     Write-Progress -Activity $status -PercentComplete $prog
 
-    $timestamp = $timestamps[$i]
+    $timestamp = $timestamps[$i] -replace "-", "/" -replace "_", ":"
     $imagepath = $names[$i]
     $num = "{0:D4}" -f $i
     $outputpath = "$tempFolderPath/$num.jpg"
